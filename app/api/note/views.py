@@ -100,7 +100,6 @@ def read_all(
         ).__dict__), 500
 
 
-
 @router.route("/<note_id>", methods=["GET"])
 @validate()
 def read(

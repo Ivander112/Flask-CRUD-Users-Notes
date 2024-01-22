@@ -69,12 +69,24 @@ class ReadAllNote:
             filter_by_user_id: bool,
     ) -> (list[dict], PaginationMetaResponse):
         with self.session as session:
-            total_item = session.execute(
-                select(func.count())
-                .select_from(Note)
-                .where(Note.deleted_at == None)
-            )
+            if filter_by_user_id:
+                total_item = session.execute(
+                    select(func.count())
+                    .select_from(Note)
+                    .where((Note.deleted_at == None) & (Note.created_by == user_id))
+                )
+            else:
+                # Jika tidak ada filter, hitung total item secara umum
+                total_item = session.execute(
+                    select(func.count())
+                    .select_from(Note)
+                    .where(Note.deleted_at == None)
+                )
+
+            # print("Total Item:", total_item)
+
             total_item = total_item.scalar()
+
             query = (
                 select(Note)
                 .where(Note.deleted_at.is_(None))
@@ -83,6 +95,8 @@ class ReadAllNote:
             )
             if filter_by_user_id:
                 query = query.filter(Note.created_by == user_id)
+
+            print("Total Item:", total_item)
 
             paginated_query = session.execute(query)
             paginated_query = paginated_query.scalars().all()
