@@ -70,7 +70,81 @@ INFO  [alembic.runtime.migration] Running upgrade a8483365f505 -> 24104b6e1e0c, 
 <br>
 
 
-[## CRUD API Notes
+# FastAPI + SQLAlchemy + Alembic Boilerplate
+
+This is a sample project of Async Web API with FastAPI + SQLAlchemy 2.0 + Alembic.
+It includes asynchronous DB access using asyncpg and test code.
+
+See [reference](https://github.com/rhoboro/async-fastapi-sqlalchemy/tree/main).
+
+Other References
+- [FastAPI Docs](https://fastapi.tiangolo.com/)
+- [Uvicorn](https://www.uvicorn.org/)
+- [SQL Alchemy](https://docs.sqlalchemy.org/en/20/orm/index.html)
+- [SQL Alchemy - PostgreSQL](https://docs.sqlalchemy.org/en/20/dialects/postgresql.html)
+- [Alembic](https://alembic.sqlalchemy.org/en/latest/tutorial.html)
+
+# Setup
+
+## Install
+
+```shell
+$ python3 -m venv venv
+$ . venv/bin/activate
+(venv) $ pip3 install -r requirements.txt
+```
+
+## Setup a database and create tables
+
+```shell
+(venv) $ docker run -d --name db \
+  -e POSTGRES_PASSWORD=root \
+  -e PGDATA=/var/lib/postgresql/data/pgdata \
+  -v pgdata:/var/lib/postgresql/data/pgdata \
+  -p 5432:5432 \
+  postgres:15.2-alpine
+
+# Cleanup database
+# $ docker stop db
+# $ docker rm db
+# $ docker volume rm pgdata
+
+(venv) $ APP_CONFIG_FILE=local python3 app/main.py migrate
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> a8483365f505, initial_empty
+INFO  [alembic.runtime.migration] Running upgrade a8483365f505 -> 24104b6e1e0c, add_tables
+```
+
+# Run
+
+```shell
+(venv) $ APP_CONFIG_FILE=local python3 app/main.py api
+INFO:     Will watch for changes in these directories: ['...']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [92173] using WatchFiles
+INFO:     Started server process [92181]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+```
+
+You can now access [localhost:8000/docs](http://localhost:8000/docs) to see the API documentation.
+
+# Test
+
+```shell
+(venv) $ python3 -m pytest
+```
+
+# Create Migration
+
+```shell
+(venv) $ cd app/migrations
+(venv) alembic revision -m "<name_of_migration_file>"
+```
+
+
+## CRUD API Notes
 
 Adding a method for notes endpoint with function:
 
@@ -101,13 +175,8 @@ http://127.0.0.1:8000/api/v1/notes/add
 
 ### Request Body
 
--   Type: Raw
-    
--   Payload:
-    
-    JSON
-    
-    ```json
+        
+    ```
         {
             "title": "test-APi",
             "content": "test-New"
@@ -124,30 +193,23 @@ http://127.0.0.1:8000/api/v1/notes/add
     JSON
     
     ```json
-            {
-                "data": {
-                    "content": "test-New",
-                    "created_at": "Mon, 22 Jan 2024 15:23:21 GMT",
-                    "created_by": 3,
-                    "deleted_at": null,
-                    "deleted_by": null,
-                    "note_id": 64,
-                    "title": "test-APi",
-                    "updated_at": null,
-                    "updated_by": null
-                },
-                "message": "success add new note",
-                "status": "success"
-}
+          {
+              "data": {
+                  "content": "test-New",
+                  "created_at": "Mon, 22 Jan 2024 15:23:21 GMT",
+                  "created_by": 3,
+                  "deleted_at": null,
+                  "deleted_by": null,
+                  "note_id": 64,
+                  "title": "test-APi",
+                  "updated_at": null,
+                  "updated_by": null
+              },
+              "message": "success add new note",
+              "status": "success"
+          }
     ```
-Body
 
-```json
-{
-  "title": "deleted_gang",
-  "content": "deleted_rules"
-}
-```
 
 ### Get All Note (Pagination)
 
@@ -168,60 +230,50 @@ This endpoint makes an HTTP GET request to retrieve notes. It accepts query para
 
 The response will have JSON object with the `data`, `message`, and `status` fields. The `data` object contains `meta` information and an array of `records` representing the notes. Each record includes details such as content, title, creation and update timestamps, and user IDs.
 
-Example Response:
+Example Input:
 
-```json
-{
-    "data": {
-        "meta": {
-            "item_per_page": 0,
-            "page": 0,
-            "total_item": 0,
-            "total_page": 0
-        },
-        "records": [
-            {
-                "content": "",
-                "created_at": "",
-                "created_by": 0,
-                "deleted_at": null,
-                "deleted_by": null,
-                "note_id": 0,
-                "title": "",
-                "updated_at": "",
-                "updated_by": 0
-            }
-        ]
-    },
-    "message": "",
-    "status": ""
-}
-```
+http://localhost:8000/api/v1/notes/?page=1&item_per_page=5&filter_by_user_id=true
+
 Query Params
 
-page  2
+page  1
 
-item_per_page   1
+item_per_page   5
 
-filter_by_user_id   false
+filter_by_user_id   true
 
 ### Get one note
 
-http://127.0.0.1:8000/api/v1/notes/49
+http://127.0.0.1:8000/api/v1/notes/34
 
 This endpoint makes an HTTP GET request to retrieve the details of a specific note. The request should include the note ID in the URL path.
 
 No request body is required for this endpoint.
 
-### Response
+Example response
 
--   The response will include the details of the note such as content, title, creation and update timestamps, and the IDs of the creator and updater.
-    
--   The "message" and "status" fields may be empty in the response.
+```json
+        {
+          "status": "success",
+          "message": "success read note",
+          "data": {
+              "note_id": 34,
+              "title": "Fast Note",
+              "content": "Fast content",
+              "created_at": "2024-01-20T07:14:00.982207",
+              "created_by": 1,
+              "updated_at": null,
+              "updated_by": null,
+              "deleted_at": null,
+              "deleted_by": null
+          }
+        }
+```
 
 ### Update Note
 
 http://127.0.0.1:8000/api/v1/notes/49
+
 ## Update Note
 
 This endpoint allows the user to update a specific note by sending an HTTP PUT request to the specified URL.
@@ -235,11 +287,7 @@ This endpoint allows the user to update a specific note by sending an HTTP PUT r
     -   `content` (string, required): The updated content of the note.
         
 
-Example:
-
-Example:
-
-JSON
+Example Input:
 
 ```json
 {
@@ -248,32 +296,6 @@ JSON
 }
 ```
 ### Response
-
--   Upon a successful update, the API will respond JSON object containing the updated note details:
-    
-    -   `note_id` (integer): The unique identifier of the updated note.
-        
-    -   `title` (string): The updated title of the note.
-        
-    -   `content` (string): The updated content of the note.
-        
-    -   `created_at` (string): Timestamp of the note creation.
-        
-    -   `updated_at` (string): Timestamp of the last update.
-        
-    -   `created_by` (integer): User ID of the note creator.
-        
-    -   `updated_by` (integer): User ID of the user who last updated the note.
-        
-    -   `deleted_at` (string): Timestamp of note deletion, if applicable.
-        
-    -   `deleted_by` (integer): User ID of the user who deleted the note, if applicable.
-        
--   Additionally, the response may include:
-    
-    -   `message` (string): Any additional information or message from the server.
-        
-    -   `status` (string): The status of the response.
   
   Example Response:
 
@@ -296,15 +318,6 @@ JSON
   "status": "success"
 }
 ```
-Body raw  (json)
-
-```json
-{
-    "title": "Deleted fast",
-    "content": "Deleted content"
-}
-```
-
 
 ### Delete Note
 
@@ -329,4 +342,5 @@ This endpoint sends an HTTP DELETE request to [http://127.0.0.1:8000/api/v1/note
     },
     "message": "success delete user",
     "status": "success"
-}](https://github.com/Ivander112/btj-academy-python-flask-Ivander-A.-W.)https://github.com/Ivander112/btj-academy-python-flask-Ivander-A.-W.
+}
+```
