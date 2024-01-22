@@ -66,10 +66,11 @@ INFO  [alembic.runtime.migration] Running upgrade a8483365f505 -> 24104b6e1e0c, 
 (venv) $ cd app/migrations
 (venv) alembic revision -m "<name_of_migration_file>"
 ```
+<br>
+<br>
 
 
-
-## CRUD API Notes
+[## CRUD API Notes
 
 Adding a method for notes endpoint with function:
 
@@ -328,4 +329,4 @@ This endpoint sends an HTTP DELETE request to [http://127.0.0.1:8000/api/v1/note
     },
     "message": "success delete user",
     "status": "success"
-}
+}](https://github.com/Ivander112/btj-academy-python-flask-Ivander-A.-W.)https://github.com/Ivander112/btj-academy-python-flask-Ivander-A.-W.
