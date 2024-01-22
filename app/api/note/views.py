@@ -100,16 +100,51 @@ def read_all(
         ).__dict__), 500
 
 
+# @router.route("/<note_id>", methods=["GET"])
+# @validate()
+# def read(
+#     note_id: int
+# ):
+#     try:
+#         get_user_id_from_access_token(request)
+
+#         read_note = ReadNote()
+#         resp_data = read_note.execute(note_id=note_id)
+
+#         return jsonify(ReadNoteResponse(
+#             status="success",
+#             message="success read user",
+#             data=resp_data.__dict__,
+#         ).__dict__), 200
+#     except HTTPException as ex:
+#         return jsonify(ReadNoteResponse(
+#             status="error",
+#             message=ex.description,
+#             data=None
+#         ).__dict__), ex.code
+#     except Exception as e:
+#         message = "failed to read user"
+#         if hasattr(e, "message"):
+#             message = e.message
+#         elif hasattr(e, "detail"):
+#             message = e.detail
+
+#         return jsonify(ReadNoteResponse(
+#             status="error",
+#             message=message,
+#             data=None
+#         ).__dict__), 500
+
 @router.route("/<note_id>", methods=["GET"])
 @validate()
 def read(
     note_id: int
 ):
     try:
-        get_user_id_from_access_token(request)
+        user_id = get_user_id_from_access_token(request)
 
         read_note = ReadNote()
-        resp_data = read_note.execute(note_id=note_id)
+        resp_data = read_note.execute(note_id=note_id, user_id=user_id)
 
         return jsonify(ReadNoteResponse(
             status="success",

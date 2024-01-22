@@ -40,15 +40,36 @@ class CreateNote:
 
             return NoteSchema.from_orm(note)
 
+# class ReadNote:
+#     def __init__(self) -> None:
+#         self.session = get_session()
+
+#     def execute(self, note_id: int) -> NoteSchema:
+#         with self.session as session:
+#             nt = session.execute(
+#                 select(Note).where(
+#                     (Note.note_id == note_id).__and__(Note.deleted_at == None)
+#                 )
+#             )
+#             nt = nt.scalars().first()
+#             if not nt:
+#                 exception = HTTPException(description="note not found")
+#                 exception.code = 404
+#                 raise exception
+#             return NoteSchema.from_orm(nt)
+        
+
 class ReadNote:
     def __init__(self) -> None:
         self.session = get_session()
 
-    def execute(self, note_id: int) -> NoteSchema:
+    def execute(self, note_id: int, user_id: int) -> NoteSchema:
         with self.session as session:
             nt = session.execute(
                 select(Note).where(
-                    (Note.note_id == note_id).__and__(Note.deleted_at == None)
+                    (Note.note_id == note_id)
+                    .__and__(Note.deleted_at == None)
+                    .__and__(Note.created_by == user_id)
                 )
             )
             nt = nt.scalars().first()
